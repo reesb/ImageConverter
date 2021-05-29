@@ -11,9 +11,11 @@ from colormath.color_objects import LabColor, sRGBColor
 from PIL import Image
 import xlsxwriter
 
-# img_path = 'ultraball.png'
-img_name = 'richard.png'
+img_name = 'ultraball.png'
 dmc_map = 'all'  # all or owned
+manual_override = {
+    (48, 48, 48, 255): 3799
+}
 
 input_folder = 'in/'
 output_folder = 'out/'
@@ -50,11 +52,14 @@ color_counter = 0
 
 color_to_letter_map = {}
 
-
 def get_closest_color(pixel_rgb, dmc_dict, method='Richard'):
 
     min_diff = 9999999
     min_dmc = ''
+    # Search for overrides
+    if tuple(pixel_rgb) in manual_override:
+        return str(manual_override[tuple(pixel_rgb)])
+
     if method == 'Richard':
         for dmc in dmc_dict:
             dmc_rgb = dmc_dict[dmc]['rgb']
