@@ -12,13 +12,16 @@ from PIL import Image
 import xlsxwriter
 
 # img_path = 'ultraball.png'
-img_path = 'Peter_Griffin.png'
+img_name = 'Peter_Griffin.png'
 dmc_map = 'all'  # all or owned
+
+input_folder = 'in/'
+output_folder = 'out/'
+img_path = input_folder + img_name
 
 start_time = time.time()
 os.chdir(os.path.dirname(__file__))
 # print(os.getcwd())
-os.chdir('../Downloads')
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -99,7 +102,7 @@ img = Image.open(img_path)
 img_data = np.asarray(img)
 out_data = img_data.copy()
 
-workbook = xlsxwriter.Workbook('out.xlsx')
+workbook = xlsxwriter.Workbook(output_folder + 'out.xlsx')
 worksheet = workbook.add_worksheet()
 worksheet.set_column('A:CA', 2.54)
 worksheet.set_column('CA:MA', 2.54)
@@ -137,5 +140,5 @@ for x in range(0, img_data.shape[0]):
 workbook.close()
 
 out = Image.fromarray(out_data)
-out.save('test.png')
+out.save(output_folder + 'test.png')
 print("--- %s seconds ---" % (time.time() - start_time))
