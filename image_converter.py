@@ -12,7 +12,7 @@ from PIL import Image
 import xlsxwriter
 
 # img_path = 'ultraball.png'
-img_name = 'Peter_Griffin.png'
+img_name = 'richard.png'
 dmc_map = 'all'  # all or owned
 
 input_folder = 'in/'
@@ -100,12 +100,49 @@ def get_closest_color(pixel_rgb, dmc_dict, method='Richard'):
 
 img = Image.open(img_path)
 img_data = np.asarray(img)
-out_data = img_data.copy()
+# out_data = img_data.copy()
+out_data = np.zeros_like(img_data)
+
+del_rows = []
+for y in range(0, img_data.shape[0]):
+    is_empty_row = True
+    for x in range(0, img_data.shape[1]):
+        pixel_rgb = img_data[y, x]
+        if sum(pixel_rgb[0:2]) == 765 or pixel_rgb[3] == 0:
+            pass
+        else:
+            is_empty_row = False
+            break
+    if is_empty_row:
+        del_rows.append(y)
+    else:
+        pass
+
+del_cols = []
+for x in range(0, img_data.shape[1]):
+    is_empty_column = True
+    for y in range(0, img_data.shape[0]):
+        pixel_rgb = img_data[y, x]
+        if sum(pixel_rgb[0:2]) == 765 or pixel_rgb[3] == 0:
+            pass
+        else:
+            is_empty_column = False
+            break
+    if is_empty_column:
+        del_cols.append(x)
+    else:
+        pass
+
+img_data = np.delete(img_data, del_rows, 1)
+img_data = np.delete(img_data, del_cols, 0)
+# img_data = np.delete(img_data, np.s_[0:y-1], 0)
 
 workbook = xlsxwriter.Workbook(output_folder + 'out.xlsx')
 worksheet = workbook.add_worksheet()
 worksheet.set_column('A:CA', 2.54)
 worksheet.set_column('CA:MA', 2.54)
+
+dmc_used_letters = []
 
 # DMC-ify the array
 for x in range(0, img_data.shape[0]):
@@ -127,12 +164,32 @@ for x in range(0, img_data.shape[0]):
             else:
                 letter = chars[color_counter % len(chars)]
                 dmc_map[dmc_key]['letter'] = letter
+                dmc_used_letters.append([letter, dmc_key, dmc_map[dmc_key]['hex']])
                 color_counter += 1
 
-            worksheet.write_column(x, y, letter, cell_format)
+            worksheet.write_column(x + 1, y + 1, letter, cell_format)
         else:
             pass
 
+# Numbering Height
+height = 0
+for y in range(1, img_data.shape[0] + 1):
+   height = height + 1
+   worksheet.write_column(y, 0, [str(height % 10)])
+# Numbering Width
+width = 0
+for x in range(1, img_data.shape[1] + 1):
+    width = width + 1
+    worksheet.write_column(height + 1, x, [str(width % 10)])
+worksheet.write_column(0, 0, [f'{img_name} [{width} x {height}]'])
+
+# Code and DMC Output
+for idx, val in enumerate(dmc_used_letters):
+    worksheet.write_column(img_data.shape[0] + 3 + idx, 0, [str(val[0])])
+    worksheet.write_column(img_data.shape[0] + 3 + idx, 2, ['Code'])
+    worksheet.write_column(img_data.shape[0] + 3 + idx, 4, [str(val[1])])
+    worksheet.write_column(img_data.shape[0] + 3 + idx, 6, ['Hex'])
+    worksheet.write_column(img_data.shape[0] + 3 + idx, 8, [str(val[2])])
 
 # Insert an image.
 # worksheet.insert_image('B5', 'test.png')
