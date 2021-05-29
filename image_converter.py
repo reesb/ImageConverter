@@ -14,6 +14,7 @@ import xlsxwriter
 img_name = 'ultraball.png'
 dmc_map = 'all'  # all or owned
 manual_override = {
+    # Manual overrides are in the format (RGBA): DMC_Code
     (48, 48, 48, 255): 3799
 }
 
